@@ -1,8 +1,9 @@
+
 workflows:
   ai-drishti-android:
     name: AI Drishti Android APK
     max_build_duration: 60
-    instance_type: linux_x2
+    instance_type: mac_mini_m2
 
     environment:
       flutter: stable
@@ -11,29 +12,33 @@ workflows:
       - name: Extract Flutter project
         script: |
           set -e
-          unzip -o "AI_Drishti_Flutter_Starter (4).zip" -d .
-          cd ai_drishti_starter
+          ZIP_FILE=$(find . -maxdepth 1 -name 'AI_Drishti_Flutter_Starter*.zip' -print -quit)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "Flutter ZIP file not found"
+            exit 1
+          fi
+          unzip -o "$ZIP_FILE" -d .
 
-          # Generate the Android platform files without replacing lib/main.dart.
-          flutter create --platforms=android --project-name ai_drishti .
-
-          # This starter ZIP does not include tests. Remove any generated
-          # default test that refers to a different app class.
-          rm -f test/widget_test.dart
-
-          flutter pub get
-
-      - name: Analyze Flutter project
+      - name: Prepare Android project
         script: |
           set -e
           cd ai_drishti_starter
-          flutter analyze --no-fatal-infos --no-fatal-warnings
+          flutter create --platforms=android .
+
+      - name: Install dependencies
+        script: |
+          cd ai_drishti_starter
+          flutter pub get
+
+      - name: Analyze project
+        script: |
+          cd ai_drishti_starter
+          flutter analyze
 
       - name: Build release APK
         script: |
-          set -e
           cd ai_drishti_starter
           flutter build apk --release
 
     artifacts:
-      - ai_drishti_starter/build/app/outputs/flutter-apk/app-release.apk
+      - ai_drishti_starter/build/app/outputs/flutter-apk/*.apk
