@@ -22,7 +22,6 @@ workflows:
           rm -rf android
           flutter create --platforms=android .
 
-          # Disable release lint to prevent CommentDetector NoSuchMethodError crash
           if [ -f android/app/build.gradle.kts ]; then
             cat << 'EOF' >> android/app/build.gradle.kts
 
@@ -56,3 +55,11 @@ workflows:
 
     artifacts:
       - extracted/ai_drishti_starter/build/app/outputs/flutter-apk/*.apk
+
+    publishing:
+      email:
+        recipients:
+          - pavanachari22@gmail.com
+        notify:
+          success: true
+          failure: true
